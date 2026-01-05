@@ -1,8 +1,8 @@
-# 🌌 Interactive Solar System with Hand Gesture Control
+# Interactive Solar System with Hand Gesture Control
 
 An immersive 3D solar system visualization where you control the camera using hand gestures detected through your webcam. Built with Three.js and MediaPipe Hands.
 
-![Solar System Preview](preview.png)
+
 
 ## ✨ Features
 
