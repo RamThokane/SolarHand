@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌌 Interactive Solar System - Hand Gesture Control</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Landing Screen -->
+    <div id="landing-screen" class="landing-screen">
+        <div class="landing-content">
+            <div class="title-container">
+                <h1 class="main-title">
+                    <span class="title-icon">🌌</span>
+                    Solar System Explorer
+                </h1>
+                <p class="subtitle">Control space with your hands</p>
+            </div>
+            
+            <div class="gesture-tutorial">
+                <h3>Hand Gesture Controls</h3>
+                <div class="gesture-grid">
+                    <div class="gesture-item">
+                        <div class="gesture-icon">👋</div>
+                        <p>Move hand to rotate view</p>
+                    </div>
+                    <div class="gesture-item">
+                        <div class="gesture-icon">🤏</div>
+                        <p>Pinch to zoom in/out</p>
+                    </div>
+                    <div class="gesture-item">
+                        <div class="gesture-icon">👆</div>
+                        <p>Point to select planet</p>
+                    </div>
+                    <div class="gesture-item">
+                        <div class="gesture-icon">✊</div>
+                        <p>Fist to follow planet</p>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="start-btn" class="start-button">
+                <span class="btn-text">Start Exploring</span>
+                <span class="btn-icon">🚀</span>
+            </button>
+            
+            <p class="camera-note">📷 Camera access required for hand tracking</p>
+        </div>
+        
+        <div class="stars-bg" id="landing-stars"></div>
+    </div>
+
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen hidden">
+        <div class="loading-content">
+            <div class="planet-loader"></div>
+            <p class="loading-text">Initializing Solar System...</p>
+            <p class="loading-fact" id="loading-fact">Did you know? The Sun contains 99.86% of the mass in the Solar System.</p>
+        </div>
+    </div>
+
+    <!-- Main Experience -->
+    <div id="main-experience" class="main-experience hidden">
+        <!-- Three.js Canvas Container -->
+        <div id="canvas-container"></div>
+        
+        <!-- Webcam Video (hidden, for processing) -->
+        <video id="webcam" autoplay playsinline></video>
+        
+        <!-- Hand Tracking Indicator -->
+        <div id="hand-indicator" class="hand-indicator">
+            <div class="hand-dot"></div>
+            <span class="hand-status">Detecting hand...</span>
+        </div>
+        
+        <!-- Gesture Feedback -->
+        <div id="gesture-feedback" class="gesture-feedback hidden">
+            <span class="gesture-name">Pinch</span>
+        </div>
+        
+        <!-- Camera Info Panel -->
+        <div id="camera-info" class="camera-info">
+            <div class="info-item">
+                <span class="info-label">Rotation</span>
+                <span class="info-value" id="rotation-value">0°</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Elevation</span>
+                <span class="info-value" id="elevation-value">30°</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Zoom</span>
+                <span class="info-value" id="zoom-value">100%</span>
+            </div>
+            <div class="info-item following hidden" id="following-info">
+                <span class="info-label">Following</span>
+                <span class="info-value" id="following-value">Earth</span>
+            </div>
+        </div>
+        
+        <!-- Planet Info Panel -->
+        <div id="planet-info" class="planet-info hidden">
+            <button class="close-btn" id="close-planet-info">✕</button>
+            <div class="planet-header">
+                <div class="planet-icon" id="planet-icon">🌍</div>
+                <div class="planet-title-area">
+                    <h2 class="planet-name" id="planet-name">Earth</h2>
+                    <span class="planet-type" id="planet-type">Terrestrial Planet</span>
+                </div>
+            </div>
+            <div class="planet-stats">
+                <div class="stat-item">
+                    <span class="stat-label">Distance from Sun</span>
+                    <span class="stat-value" id="planet-distance">149.6 million km</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Orbital Period</span>
+                    <span class="stat-value" id="planet-period">365.25 days</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Diameter</span>
+                    <span class="stat-value" id="planet-diameter">12,742 km</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Moons</span>
+                    <span class="stat-value" id="planet-moons">1</span>
+                </div>
+            </div>
+            <p class="planet-description" id="planet-description">
+                Earth is the third planet from the Sun and the only astronomical object known to harbor life.
+            </p>
+            <div class="planet-funfact">
+                <span class="funfact-label">🌟 Fun Fact</span>
+                <p id="planet-funfact">Earth is the only planet not named after a god.</p>
+            </div>
+        </div>
+        
+        <!-- Controls Guide (toggleable) -->
+        <div id="controls-guide" class="controls-guide hidden">
+            <h3>Hand Controls</h3>
+            <div class="control-item">
+                <div class="control-visual">
+                    <span class="hand-visual">✋</span>
+                    <span class="arrow">↔️</span>
+                </div>
+                <p>Move hand to rotate</p>
+            </div>
+            <div class="control-item">
+                <div class="control-visual">
+                    <span class="hand-visual">🤏</span>
+                    <span class="arrow">↕️</span>
+                </div>
+                <p>Pinch to zoom</p>
+            </div>
+            <div class="control-item">
+                <div class="control-visual">
+                    <span class="hand-visual">👆</span>
+                    <span class="arrow">🎯</span>
+                </div>
+                <p>Point to select</p>
+            </div>
+            <div class="control-item">
+                <div class="control-visual">
+                    <span class="hand-visual">✊</span>
+                    <span class="arrow">🔒</span>
+                </div>
+                <p>Fist to follow</p>
+            </div>
+            <div class="control-item">
+                <div class="control-visual">
+                    <span class="hand-visual">🖐️</span>
+                    <span class="arrow">🏠</span>
+                </div>
+                <p>Open palm to reset</p>
+            </div>
+        </div>
+        
+        <!-- Settings Panel -->
+        <div id="settings-panel" class="settings-panel hidden">
+            <h3>Settings</h3>
+            <div class="setting-item">
+                <label for="show-labels">Planet Labels</label>
+                <input type="checkbox" id="show-labels" checked>
+            </div>
+            <div class="setting-item">
+                <label for="show-orbits">Orbit Paths</label>
+                <input type="checkbox" id="show-orbits" checked>
+            </div>
+            <div class="setting-item">
+                <label for="show-moons">Show Moons</label>
+                <input type="checkbox" id="show-moons" checked>
+            </div>
+            <div class="setting-item">
+                <label for="show-asteroids">Asteroid Belt</label>
+                <input type="checkbox" id="show-asteroids" checked>
+            </div>
+            <div class="setting-item">
+                <label for="orbit-speed">Orbit Speed</label>
+                <input type="range" id="orbit-speed" min="0" max="200" value="100">
+            </div>
+            <div class="setting-item">
+                <label for="realistic-scale">Realistic Distances</label>
+                <input type="checkbox" id="realistic-scale">
+            </div>
+        </div>
+        
+        <!-- Bottom Toolbar -->
+        <div class="toolbar">
+            <button class="toolbar-btn" id="btn-help" title="Controls Guide">
+                <span>❓</span>
+            </button>
+            <button class="toolbar-btn" id="btn-settings" title="Settings">
+                <span>⚙️</span>
+            </button>
+            <button class="toolbar-btn" id="btn-screenshot" title="Screenshot">
+                <span>📷</span>
+            </button>
+            <button class="toolbar-btn" id="btn-reset" title="Reset View">
+                <span>🏠</span>
+            </button>
+            <button class="toolbar-btn" id="btn-sound" title="Toggle Sound">
+                <span>🔊</span>
+            </button>
+        </div>
+        
+        <!-- Planet Selection Bar -->
+        <div class="planet-bar">
+            <button class="planet-btn" data-planet="sun" title="Sun">☀️</button>
+            <button class="planet-btn" data-planet="mercury" title="Mercury">🪨</button>
+            <button class="planet-btn" data-planet="venus" title="Venus">🌕</button>
+            <button class="planet-btn" data-planet="earth" title="Earth">🌍</button>
+            <button class="planet-btn" data-planet="mars" title="Mars">🔴</button>
+            <button class="planet-btn" data-planet="jupiter" title="Jupiter">🟤</button>
+            <button class="planet-btn" data-planet="saturn" title="Saturn">🪐</button>
+            <button class="planet-btn" data-planet="uranus" title="Uranus">🔵</button>
+            <button class="planet-btn" data-planet="neptune" title="Neptune">🔷</button>
+        </div>
+        
+        <!-- Hand Canvas Overlay -->
+        <canvas id="hand-canvas" class="hand-canvas"></canvas>
+    </div>
+
+    <!-- Audio -->
+    <audio id="ambient-audio" loop>
+        <source src="https://assets.codepen.io/1468070/Space+Ambience.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Scripts -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
